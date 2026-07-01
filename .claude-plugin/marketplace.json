@@ -1,0 +1,14 @@
+{
+  "name": "env-guard-marketplace",
+  "owner": {
+    "name": "Oleksandr Moiseiuk",
+    "url": "https://github.com/OleksandrCEO"
+  },
+  "plugins": [
+    {
+      "name": "env-guard",
+      "source": "./env-guard",
+      "description": "Blocks Claude Code from reading, editing, or shell-reading the real .env file; allows .env.example and .env.* templates."
+    }
+  ]
+}
