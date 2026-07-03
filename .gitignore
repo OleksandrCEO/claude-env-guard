@@ -1,0 +1,35 @@
+# ── Project-specific ─────────────────────────────────────────────
+# The real secrets file this very plugin exists to protect — never commit it.
+.env
+.env.*
+# ...but keep templates that document required variables.
+!.env.example
+
+# ── Python (the hook is a Python script) ─────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# ── JetBrains / PyCharm ──────────────────────────────────────────
+.idea/
+
+# ── VS Code ──────────────────────────────────────────────────────
+# Ignore per-user editor state, but keep shared workspace config
+# (settings/extensions/launch/tasks) so the team stays in sync.
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+*.code-workspace
+
+# ── OS cruft ─────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
