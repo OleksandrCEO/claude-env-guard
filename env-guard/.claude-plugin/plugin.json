@@ -1,9 +1,8 @@
 {
   "name": "env-guard",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "PreToolUse guard that blocks access to the real .env file (reading, editing, writing, or shell reads), while allowing .env.example and .env.* templates.",
   "author": {
     "name": "Oleksandr Moiseiuk"
-  },
-  "hooks": "./hooks/hooks.json"
+  }
 }
