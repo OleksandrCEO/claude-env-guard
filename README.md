@@ -1,17 +1,44 @@
-# env-guard — Claude Code plugin
+# MagWer ENV Guard — Claude Code plugin
 
-A tiny Claude Code plugin that **blocks all access to the real `.env` file** — reading, editing,
-writing, or reading it through shell commands (`cat`, `grep`, `head`, `sed`, `vim`, …). Templates
-like `.env.example`, `.env.local`, and `.env.*` stay allowed.
+![version](https://img.shields.io/github/v/tag/OleksandrCEO/claude-env-guard?label=version&sort=semver)
+![license](https://img.shields.io/badge/license-MIT-green)
+![python](https://img.shields.io/badge/python-3.x-blue)
+![platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey)
 
-Why: `.env` holds live secrets. New or changed variables belong in `.env.example`, with a note
+A small, dependency-free Claude Code plugin that **blocks all access to the real `.env` file** —
+whether Claude tries to read, edit, or write it directly, reach it through a shell command, or
+run a script that loads it. Templates like `.env.example`, `.env.local`, and `.env.*` stay allowed.
+
+**Why:** `.env` holds live secrets. New or changed variables belong in `.env.example`, with a note
 telling the human which parameter to copy into their local `.env`.
 
-Cross-platform: the guard is pure Python 3 (no dependencies) and the hook uses the plugin's
-`${CLAUDE_PLUGIN_ROOT}` path via the exec (`args`) form, so it works under bash **and** PowerShell
-on Windows, macOS, and Linux.
+## Features
 
-## Install (for students)
+- **Direct file access** — `Read` / `Edit` / `Write` on a file named exactly `.env` is denied.
+- **Shell reads** — Bash commands that touch `.env` (`cat`, `grep`, `head`, `sed`, `source`,
+  `export $(cat .env)`, …) are denied.
+- **Scripts that read `.env`** — writing or editing a script whose contents open `.env`
+  (`open(".env")`, `load_dotenv()`, `dotenv.config()`, `godotenv.Load`, …) is denied, and Bash
+  commands that *run* such a script (`python app.py`, `node app.js`, `./run.sh`) are inspected on
+  disk and denied too.
+- **Templates allowed** — `.env.example`, `.env.local`, `.env.<anything>` always pass.
+- **No false positives on env vars** — reading process environment (`os.getenv`, `process.env`)
+  is *not* blocked; only reading the `.env` file is.
+- **Fails open** — on malformed hook input it never blocks, so it can't break your tool pipeline.
+
+## What is / isn't blocked
+
+| Action | Result |
+|---|---|
+| Read / Edit / Write a file named exactly `.env` | ❌ blocked |
+| Shell command referencing a `.env` path (`cat`, `source`, …) | ❌ blocked |
+| Writing a script that reads `.env` (`open(".env")`, `load_dotenv()`) | ❌ blocked |
+| Running a script file that reads `.env` (`python app.py`, `./run.sh`) | ❌ blocked |
+| `.env.example`, `.env.local`, `.env.<anything>` | ✅ allowed |
+| Reading process env vars (`os.getenv`, `process.env`) | ✅ allowed |
+| Everything else | ✅ allowed |
+
+## Install
 
 In Claude Code, run:
 
@@ -20,38 +47,32 @@ In Claude Code, run:
 /plugin install env-guard@env-guard-marketplace
 ```
 
-Then restart Claude Code (or open `/plugin` once) so the hook activates. Done — no files to copy.
-
-## Requirements
-
-- **Python 3 on `PATH`** (the hook runs `python3`).
-- **Windows:** if `python3` is not recognized, install Python from python.org (which provides the
-  `py` launcher and usually a working `python3`), or from the Microsoft Store (which creates
-  `python3.exe`). If you must use `python` instead, edit `env-guard/hooks/hooks.json` and change
-  `"command": "python3"` to `"command": "python"`.
+Then restart Claude Code (or open `/plugin` once) so the hook activates. No files to copy.
 
 ## Verify
 
-Ask Claude to read `.env` — it should be denied with a message pointing you to `.env.example`.
-Reading `.env.example` still works.
+Ask Claude to read `.env` — it should be denied with a message pointing to `.env.example`.
+Reading `.env.example` still works. Ask it to run a script that calls `load_dotenv()` — that is
+denied as well.
 
-## What is / isn't blocked
+## Requirements
 
-| Action | Result |
-|---|---|
-| Read/Edit/Write a file named exactly `.env` | ❌ blocked |
-| Shell command referencing a `.env` path | ❌ blocked |
-| `.env.example`, `.env.local`, `.env.<anything>` | ✅ allowed |
-| Everything else | ✅ allowed |
+- **Python 3 on `PATH`** — the hook runs `python3` (no third-party packages).
+- **Windows** — the Microsoft Store build creates `python3.exe`, so the hook works as-is. The
+  python.org installer instead provides `python` and the `py` launcher (no `python3.exe`); if
+  `python3` is not recognized, edit `env-guard/hooks/hooks.json` and change `"command": "python3"`
+  to `"command": "python"` (or `"command": "py"`).
 
-The guard **fails open** on malformed hook input, so it can never break your tool pipeline.
+The guard is pure Python 3, and the hook uses the exec form (`command` + `args`) so Claude Code
+substitutes `${CLAUDE_PLUGIN_ROOT}` itself — no shell involved — and it runs identically on macOS,
+Linux, and Windows (with or without Git Bash).
 
 ## Repo layout
 
 ```
 .claude-plugin/marketplace.json   # marketplace manifest (lists the plugin)
 env-guard/
-├── .claude-plugin/plugin.json    # plugin manifest
+├── .claude-plugin/plugin.json    # plugin manifest (holds the version)
 └── hooks/
     ├── hooks.json                # registers the PreToolUse hook
     └── block-env.py              # the guard logic
